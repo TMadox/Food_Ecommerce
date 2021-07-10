@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_store/CustomWidgets/CustomAppBar.dart';
+import 'package:test_store/CustomWidgets/addToCartButton.dart';
 import 'package:test_store/Logic/APIRequests.dart';
 import 'package:test_store/Logic/StateManagement.dart';
+import 'package:test_store/Variables/ColorsNConstants.dart';
+import 'package:test_store/Models/ProductModel.dart';
 import 'package:test_store/Variables/ScreenSize.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,16 +19,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final General portal = General();
+  final _scrollController = ScrollController();
+  APIRequests portal = APIRequests();
+  static int _currentpagenumber = 1;
+  late int totalpages = 0;
+  late String? userToken = "";
+  late var response;
+
   @override
-  void initState() {
-    // TODO: implement initState
+  initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      context
-          .read(generalmanagment)
-          .ultramethod("Bearer 1181|Qxd9laSMxbYP2rTeHOpE4g4FqguFCZRz1y0nO2KO")
-          .then((value) => setState(() {}));
+    SharedPreferences.getInstance().then((value) {
+      userToken = value.getString("token");
+      response = portal
+          .requestProducts(userToken, context, _currentpagenumber, false)
+          .then((value) {
+        context.read(generalmanagment).settotalpages(value[0].lastPage);
+      });
+    });
+    //////// to listen to the list and detect if it has reached the bottom and load more data.
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge) {
+        final isBottom = _scrollController.position.pixels != 0;
+        if (isBottom) {
+          loadData(context);
+        }
+      }
     });
   }
 
@@ -28,218 +52,100 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     var width = screenWidth(context);
     var height = screenHeight(context);
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blueGrey,
-        centerTitle: true,
-        title: Text("Test-Model"),
-      ),
-      body: context.read(generalmanagment).categories != null
-          ? ListView(
-              children: [
-                Container(
-                    alignment: AlignmentDirectional.center,
-                    child: Text(
-                      "Categories",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: width * 0.06),
-                    )),
-                Consumer(
-                  builder: (context, watch, child) => Container(
-                    height: height * 0.2,
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: watch(generalmanagment)
-                            .categories[0]['data']
-                            .length,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (contect, index) {
-                          return Card(
-                              child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: "https://flkwatches.flk.sa/" +
-                                    watch(generalmanagment).categories[0]
-                                        ['data'][index]["image"],
-                                placeholder: (context, url) =>
-                                    CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
-                              ),
-                              Text(watch(generalmanagment).categories[0]['data']
-                                  [index]["name"]),
-                              Text(watch(generalmanagment).categories[0]['data']
-                                  [index]["seo_description"])
-                            ],
-                          ));
-                        }),
-                  ),
+    return Container(
+      child: Scaffold(
+        appBar: customAppBar(context: context),
+        body: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverAppBar(
+              expandedHeight: height * 0.3,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  child: CarouselSlider.builder(
+                      options: CarouselOptions(height: 400.0),
+                      itemCount: 10,
+                      itemBuilder: (context, index, pageindex) => Container(
+                            width: width,
+                            color: Colors.red,
+                            child: Text(index.toString()),
+                          )),
                 ),
-                Container(
-                    alignment: AlignmentDirectional.center,
-                    child: Text(
-                      "Products",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: width * 0.06),
-                    )),
-                Consumer(
-                  builder: (context, watch, child) => Container(
-                    height: height * 0.2,
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount:
-                            watch(generalmanagment).products[0]['data'].length,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (contect, index) {
-                          return Card(
-                              child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: "https://flkwatches.flk.sa/" +
-                                    watch(generalmanagment)
-                                        .products[0]['data'][index]["images"]!
-                                        .toString(),
-                                placeholder: (context, url) =>
-                                    CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
-                              ),
-                              Text(watch(generalmanagment).products[0]['data']
-                                  [index]["name"]),
-                              Text(watch(generalmanagment)
-                                  .products[0]['data'][index]["price"]
-                                  .toString())
-                            ],
-                          ));
-                        }),
-                  ),
-                ),
-                Container(
-                    alignment: AlignmentDirectional.center,
-                    child: Text(
-                      "Orders",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: width * 0.06),
-                    )),
-                Consumer(
-                  builder: (context, watch, child) => Container(
-                    height: height * 0.2,
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount:
-                            watch(generalmanagment).orders['links'].length,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (contect, index) {
-                          return Card(
-                              child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // CachedNetworkImage(
-                              //   imageUrl: "https://flkwatches.flk.sa/" +
-                              //       watch(generalmanagment)
-                              //           .orders[0]['data'][index]["images"]!
-                              //           .toString(),
-                              //   placeholder: (context, url) =>
-                              //       CircularProgressIndicator(),
-                              //   errorWidget: (context, url, error) =>
-                              //       Icon(Icons.error),
-                              // ),
-                              Text(watch(generalmanagment).orders['links']
-                                  [index]["label"]),
-                              Text(watch(generalmanagment)
-                                  .orders['links'][index]["active"]
-                                  .toString())
-                            ],
-                          ));
-                        }),
-                  ),
-                ),
-              ],
-            )
-          : Center(
-              child: CircularProgressIndicator(),
+              ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.read(generalmanagment).test();
-        },
+            SliverToBoxAdapter(
+              child: Consumer(
+                builder: (context, watch, child) =>
+                    watch(generalmanagment).products.length == 0
+                        ? Container(
+                            padding: EdgeInsets.only(top: height * 0.3),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                              ),
+                            ),
+                          )
+                        : GridView.builder(
+                            shrinkWrap: true,
+                            primary: false,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2),
+                            itemCount: watch(generalmanagment).products.length,
+                            itemBuilder: (context, index) {
+                              return Center(
+                                  child: Card(
+                                elevation: 0.1,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                        child: CachedNetworkImage(
+                                      imageUrl: apiBaseUrl +
+                                          watch(generalmanagment)
+                                              .products[index]["images"][0],
+                                      placeholder: (context, url) =>
+                                          Image.asset("Images/plcholder.jpeg"),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
+                                    )),
+                                    Directionality(
+                                      textDirection: TextDirection.rtl,
+                                      child: ListTile(
+                                        title: Text(watch(generalmanagment)
+                                            .products[index]["name"]),
+                                        subtitle: Text(
+                                          watch(generalmanagment)
+                                                  .products[index]["price"]
+                                                  .toString() +
+                                              "EGB",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w900),
+                                        ),
+                                      ),
+                                    ),
+                                    addToCartButton()
+                                  ],
+                                ),
+                              ));
+                            }),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  Future<void> loadData(BuildContext context) async {
+    if (context.read(generalmanagment).currentPage <=
+        context.read(generalmanagment).totalPages) {
+      try {
+        await portal.requestProducts(userToken, context,
+            context.read(generalmanagment).currentPage, false);
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
 }
-// ListView(
-//         children: [
-//           Container(
-//               alignment: AlignmentDirectional.center,
-//               child: Text(
-//                 "Categories",
-//                 style: TextStyle(
-//                     fontWeight: FontWeight.bold, fontSize: width * 0.06),
-//               )),
-//           Consumer(
-//             builder: (context, watch, child) => Container(
-//               height: height * 0.2,
-//               child: ListView.builder(
-//                   shrinkWrap: true,
-//                   itemCount:
-//                       watch(generalmanagment).categories[0]['data'].length,
-//                   scrollDirection: Axis.horizontal,
-//                   itemBuilder: (contect, index) {
-//                     return Card(
-//                         child: Column(
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: [
-//                         CachedNetworkImage(
-//                           imageUrl: "https://flkwatches.flk.sa/" +
-//                               watch(generalmanagment).categories[0]['data']
-//                                   [index]["image"],
-//                           placeholder: (context, url) =>
-//                               CircularProgressIndicator(),
-//                           errorWidget: (context, url, error) =>
-//                               Icon(Icons.error),
-//                         ),
-//                         Text(watch(generalmanagment).categories[0]['data']
-//                             [index]["name"]),
-//                         Text(watch(generalmanagment).categories[0]['data']
-//                             [index]["seo_description"])
-//                       ],
-//                     ));
-//                   }),
-//             ),
-//           ),
-//           Container(
-//               alignment: AlignmentDirectional.center,
-//               child: Text(
-//                 "Products",
-//                 style: TextStyle(
-//                     fontWeight: FontWeight.bold, fontSize: width * 0.06),
-//               )),
-//           // Container(
-//           //   height: height * 0.2,
-//           //   child: ListView.builder(
-//           //       shrinkWrap: true,
-//           //       itemCount: state.categories[0]['data'].length,
-//           //       scrollDirection: Axis.horizontal,
-//           //       itemBuilder: (contect, index) {
-//           //         return Card(
-//           //             child: Column(
-//           //           mainAxisAlignment: MainAxisAlignment.center,
-//           //           children: [
-//           //             CachedNetworkImage(
-//           //               imageUrl: "https://flkwatches.flk.sa/" +
-//           //                   state.products[0]['data'][index]["images"][0],
-//           //               placeholder: (context, url) =>
-//           //                   CircularProgressIndicator(),
-//           //               errorWidget: (context, url, error) => Icon(Icons.error),
-//           //             ),
-//           //             Text(state.products[0]['data'][index]["name"]),
-//           //             Text(state.products[0]['data'][index]["pos_price"]
-//           //                 .toString())
-//           //           ],
-//           //         ));
-//           //       }),
-//           // ),
-//         ],
-//       ),
