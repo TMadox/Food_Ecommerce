@@ -1,14 +1,29 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:test_store/Logic/StateManagement.dart';
+import 'package:test_store/MainScreens/CartScreen.dart';
 import 'package:test_store/Variables/ScreenSize.dart';
+import 'package:badges/badges.dart';
 
 PreferredSizeWidget customAppBar({required BuildContext context}) => AppBar(
-    leading: IconButton(
-      icon: Icon(
-        Icons.shopping_cart,
-        color: Colors.black,
+    leading: Consumer(
+      builder: (context, watch, child) => IconButton(
+        icon: Badge(
+          badgeContent:
+              Text(watch(generalmanagment).cart.cartItem.length.toString()),
+          child: Icon(
+            Icons.shopping_cart,
+            color: Colors.black,
+          ),
+        ),
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (BuildContext context) {
+            return CartScreen();
+          }));
+        },
       ),
-      onPressed: () {},
     ),
     actions: [
       IconButton(

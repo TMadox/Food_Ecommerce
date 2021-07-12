@@ -21,22 +21,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _scrollController = ScrollController();
   APIRequests portal = APIRequests();
-  static int _currentpagenumber = 1;
   late int totalpages = 0;
-  late String? userToken = "";
+  String? userToken;
   late var response;
 
   @override
   initState() {
     super.initState();
-    SharedPreferences.getInstance().then((value) {
-      userToken = value.getString("token");
-      response = portal
-          .requestProducts(userToken, context, _currentpagenumber, false)
-          .then((value) {
-        context.read(generalmanagment).settotalpages(value[0].lastPage);
-      });
-    });
+    userToken = context.read(generalmanagment).userToken;
+
     //////// to listen to the list and detect if it has reached the bottom and load more data.
     _scrollController.addListener(() {
       if (_scrollController.position.atEdge) {
@@ -74,62 +67,61 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Consumer(
-                builder: (context, watch, child) =>
-                    watch(generalmanagment).products.length == 0
-                        ? Container(
-                            padding: EdgeInsets.only(top: height * 0.3),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.black,
+              child: Consumer(builder: (context, watch, child) {
+                final state = watch(generalmanagment);
+                return GridView.builder(
+                    shrinkWrap: true,
+                    primary: false,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2),
+                    itemCount: state.products.length,
+                    itemBuilder: (context, index) {
+                      return Center(
+                          child: Card(
+                        elevation: 0.1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                                child: CachedNetworkImage(
+                              imageUrl: apiBaseUrl +
+                                  state.products[index]["images"][0],
+                              placeholder: (context, url) =>
+                                  Image.asset("Images/plcholder.jpeg"),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            )),
+                            Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: ListTile(
+                                title: Text(state.products[index]["name"]),
+                                subtitle: Text(
+                                  state.products[index]["price"].toString() +
+                                      "EGB",
+                                  style: TextStyle(fontWeight: FontWeight.w900),
+                                ),
                               ),
                             ),
-                          )
-                        : GridView.builder(
-                            shrinkWrap: true,
-                            primary: false,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2),
-                            itemCount: watch(generalmanagment).products.length,
-                            itemBuilder: (context, index) {
-                              return Center(
-                                  child: Card(
-                                elevation: 0.1,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                        child: CachedNetworkImage(
-                                      imageUrl: apiBaseUrl +
-                                          watch(generalmanagment)
-                                              .products[index]["images"][0],
-                                      placeholder: (context, url) =>
-                                          Image.asset("Images/plcholder.jpeg"),
-                                      errorWidget: (context, url, error) =>
-                                          Icon(Icons.error),
-                                    )),
-                                    Directionality(
-                                      textDirection: TextDirection.rtl,
-                                      child: ListTile(
-                                        title: Text(watch(generalmanagment)
-                                            .products[index]["name"]),
-                                        subtitle: Text(
-                                          watch(generalmanagment)
-                                                  .products[index]["price"]
-                                                  .toString() +
-                                              "EGB",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w900),
-                                        ),
-                                      ),
-                                    ),
-                                    addToCartButton()
-                                  ],
-                                ),
-                              ));
-                            }),
-              ),
+                            addToCartButton(
+                                context: context,
+                                itemId: state.products[index]['id'].toString(),
+                                customIcon: state.checkItemInCart(
+                                        state.products[index]['id'].toString())
+                                    ? Icon(Icons.check)
+                                    : Icon(Icons.shopping_cart),
+                                title: state.checkItemInCart(
+                                        state.products[index]['id'].toString())
+                                    ? "في العربة"
+                                    : "اضف الي العربة",
+                                price: state.products[index]["price"],
+                                productName: state.products[index]["name"],
+                                imageUrl: apiBaseUrl +
+                                    state.products[index]["images"][0])
+                          ],
+                        ),
+                      ));
+                    });
+              }),
             ),
           ],
         ),
@@ -138,11 +130,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> loadData(BuildContext context) async {
-    if (context.read(generalmanagment).currentPage <=
-        context.read(generalmanagment).totalPages) {
+    if (context.read(generalmanagment).currentProductPage <=
+        context.read(generalmanagment).totalProductsPages) {
       try {
         await portal.requestProducts(userToken, context,
-            context.read(generalmanagment).currentPage, false);
+            context.read(generalmanagment).currentProductPage, false);
       } catch (e) {
         print(e);
       }

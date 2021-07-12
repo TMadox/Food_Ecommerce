@@ -37,6 +37,11 @@ dependencies:
   pull_to_refresh: ^2.0.0
   modal_progress_hud_nsn: ^0.1.0-nullsafety-1
   carousel_slider: ^4.0.0
+  shimmer: ^2.0.0
+  animated_splash_screen: ^1.1.0
+  settings_ui: ^1.0.0
+  flutter_cart: ^0.0.6
+  badges: ^2.0.1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -60,6 +65,7 @@ flutter:
   assets:
     - Images/Logos/
     - Images/
+    - Files/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

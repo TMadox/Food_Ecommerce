@@ -141,6 +141,10 @@ class SignupScreen extends StatelessWidget {
                           },
                           context: context,
                           title: "حساب جديد",
+                          newIcon: Icon(
+                            Icons.person_add,
+                            color: Colors.white,
+                          ),
                           primarycolor: Colors.black,
                           titlecolor: Colors.white),
                       customButton(
@@ -149,6 +153,10 @@ class SignupScreen extends StatelessWidget {
                           },
                           context: context,
                           title: "تسجيل دخول ",
+                          newIcon: Icon(
+                            Icons.login,
+                            color: Colors.black,
+                          ),
                           primarycolor: Colors.white,
                           titlecolor: Colors.black)
                     ],

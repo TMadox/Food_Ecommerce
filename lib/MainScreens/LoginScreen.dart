@@ -7,7 +7,9 @@ import 'package:test_store/CustomWidgets/CustomButton.dart';
 import 'package:test_store/CustomWidgets/CustomFormBuilder.dart';
 import 'package:test_store/Logic/APIRequests.dart';
 import 'package:test_store/Logic/StateManagement.dart';
+import 'package:test_store/MainScreens/NavigationBar.dart';
 import 'package:test_store/MainScreens/SignupScreen.dart';
+import 'package:test_store/MainScreens/SplashScreen.dart';
 import 'package:test_store/Variables/ScreenSize.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
@@ -54,6 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         validation(context);
                       },
                       title: 'تسجيل الدخول',
+                      newIcon: Icon(
+                        Icons.login,
+                        color: Colors.white,
+                      ),
                       primarycolor: Colors.black,
                       titlecolor: Colors.white),
                   customButton(
@@ -62,6 +68,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         Get.to(() => SignupScreen());
                       },
                       title: 'حساب جديد',
+                      newIcon: Icon(
+                        Icons.person_add,
+                        color: Colors.black,
+                      ),
                       primarycolor: Colors.white,
                       titlecolor: Colors.black)
                 ],
@@ -88,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // this line is disposable..
         }
         contextm.read(generalmanagment).setIsLoading();
-        Get.off(() => HomeScreen());
+        Get.off(() => CustomSplashScreen());
       } on Exception catch (e) {
         Get.snackbar("Error", e.toString());
       }

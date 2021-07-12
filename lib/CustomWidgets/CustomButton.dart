@@ -6,12 +6,14 @@ Widget customButton(
         required BuildContext context,
         required String title,
         required Color primarycolor,
-        required Color titlecolor}) =>
+        required Color titlecolor,
+        required Icon newIcon}) =>
     Container(
         width: screenWidth(context) * 0.8,
-        child: ElevatedButton(
+        child: ElevatedButton.icon(
+          icon: newIcon,
           onPressed: customOnPressed,
-          child: Text(
+          label: Text(
             title,
             style: TextStyle(color: titlecolor, fontWeight: FontWeight.bold),
           ),
