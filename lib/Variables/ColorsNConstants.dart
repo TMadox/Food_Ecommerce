@@ -14,3 +14,6 @@ const String apiAdsUrl = "https://www.orderitto.com/api/ads?page=";
 const String apiOrdesrUrl = "https://www.orderitto.com/api/orders?customer_id=";
 const String apiSignupUrl = "https://www.orderitto.com/api/register";
 const String apiUserInfo = "https://www.orderitto.com/api/user";
+const String apiShowCountryUrl = "https://www.orderitto.com/api/locations";
+const String apiCategoriesListUrl = "https://www.orderitto.com/api/category";
+const String apiEditProfileUrl = "https://www.orderitto.com/api/profile";

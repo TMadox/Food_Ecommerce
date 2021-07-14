@@ -32,6 +32,8 @@ class CustomSplashScreen extends StatelessWidget {
               context
                   .read(generalmanagment)
                   .setUserId(sharedvalue.getString("user_id").toString());
+              context.read(generalmanagment).setUserPassword(
+                  sharedvalue.getString("password").toString());
             }));
 
         return CustomNavigationBar();

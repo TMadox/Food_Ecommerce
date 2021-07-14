@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_store/CustomWidgets/CustomAppBar.dart';
 import 'package:test_store/CustomWidgets/addToCartButton.dart';
 import 'package:test_store/Logic/APIRequests.dart';
 import 'package:test_store/Logic/StateManagement.dart';
+import 'package:test_store/MainScreens/ShowProductScreen.dart';
 import 'package:test_store/Variables/ColorsNConstants.dart';
 import 'package:test_store/Models/ProductModel.dart';
 import 'package:test_store/Variables/ScreenSize.dart';
@@ -77,47 +77,60 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: state.products.length,
                     itemBuilder: (context, index) {
                       return Center(
-                          child: Card(
-                        elevation: 0.1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                                child: CachedNetworkImage(
-                              imageUrl: apiBaseUrl +
-                                  state.products[index]["images"][0],
-                              placeholder: (context, url) =>
-                                  Image.asset("Images/plcholder.jpeg"),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                            )),
-                            Directionality(
-                              textDirection: TextDirection.rtl,
-                              child: ListTile(
-                                title: Text(state.products[index]["name"]),
-                                subtitle: Text(
-                                  state.products[index]["price"].toString() +
-                                      "EGB",
-                                  style: TextStyle(fontWeight: FontWeight.w900),
+                          child: InkWell(
+                        onTap: () {
+                            Navigator.push(context,
+              MaterialPageRoute(
+                builder: (BuildContext context) {
+            return ShowProductScreen(index: index,);
+          }));
+                        },
+                        child: Card(
+                          elevation: 0.1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                  child: CachedNetworkImage(
+                                imageUrl: apiBaseUrl +
+                                    state.products[index]["images"][0],
+                                placeholder: (context, url) =>
+                                    Image.asset("Images/plcholder.jpeg"),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                              )),
+                              Directionality(
+                                textDirection: TextDirection.rtl,
+                                child: ListTile(
+                                  title: Text(state.products[index]["name"]),
+                                  subtitle: Text(
+                                    state.products[index]["price"].toString() +
+                                        "EGB",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w900),
+                                  ),
                                 ),
                               ),
-                            ),
-                            addToCartButton(
-                                context: context,
-                                itemId: state.products[index]['id'].toString(),
-                                customIcon: state.checkItemInCart(
-                                        state.products[index]['id'].toString())
-                                    ? Icon(Icons.check)
-                                    : Icon(Icons.shopping_cart),
-                                title: state.checkItemInCart(
-                                        state.products[index]['id'].toString())
-                                    ? "في العربة"
-                                    : "اضف الي العربة",
-                                price: state.products[index]["price"],
-                                productName: state.products[index]["name"],
-                                imageUrl: apiBaseUrl +
-                                    state.products[index]["images"][0])
-                          ],
+                              addToCartButton(
+                                  context: context,
+                                  itemId:
+                                      state.products[index]['id'].toString(),
+                                  customIcon: state.checkItemInCart(state
+                                          .products[index]['id']
+                                          .toString())
+                                      ? Icon(Icons.check)
+                                      : Icon(Icons.shopping_cart),
+                                  title: state.checkItemInCart(state
+                                          .products[index]['id']
+                                          .toString())
+                                      ? "في العربة"
+                                      : "اضف الي العربة",
+                                  price: state.products[index]["price"],
+                                  productName: state.products[index]["name"],
+                                  imageUrl: apiBaseUrl +
+                                      state.products[index]["images"][0])
+                            ],
+                          ),
                         ),
                       ));
                     });

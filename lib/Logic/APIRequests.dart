@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,27 +27,43 @@ class APIRequests {
         context
             .read(generalmanagment)
             .setTotalProductsPages(value[0].lastPage));
-
+    await requestShowCountry(userToken, context);
     await requestUserInfo(userToken, context);
+    await requestCategoriesList(userToken, context, pageNumber).then((value) =>
+        context.read(generalmanagment).setTotalCategoryPages(value.lastPage));
   }
 
-  Future requestLogin(Map loginInfo, BuildContext contextm) async {
-    final Map<String, String?> data = {
-      'email': loginInfo["email"],
-      'password': loginInfo["password"]
-    };
+  Future requestLogin(Map loginInfo) async {
     Options requestOptions = Options(
       headers: {"Content-Type": "application/json"},
     );
     Dio dio = Dio();
-    var response =
-        await dio.post(apiLoginUrl, data: data, options: requestOptions);
+    try {
+      var response =
+          await dio.post(apiLoginUrl, data: loginInfo, options: requestOptions);
+      SharedPreferences.getInstance().then((value) {
+        value.setString("token", response.data["token"]);
+        value.setString("password", loginInfo["password"]);
+        value.setString("user_id", response.data["user"]["id"].toString());
+      });
+    } on Exception catch (e) {
+      Get.snackbar("Error", e.toString());
+    }
+  }
 
-    SharedPreferences.getInstance().then((value) {
-      value.setString("token", response.data["token"]);
-      value.setString("user_id", response.data["user"]["id"].toString());
-    });
-    return response.data;
+  Future requestChangeInfo(
+      String? userToken, Map changeInfoData, BuildContext context) async {
+    Options requestOptions = Options(
+      headers: {"Content-Type": "application/json", "Authorization": userToken},
+    );
+    Dio dio = Dio();
+    try {
+      await dio.post(apiEditProfileUrl,
+          data: changeInfoData, options: requestOptions);
+      await requestUserInfo(userToken, context);
+    } on Exception catch (e) {
+      Get.snackbar("Error", e.toString());
+    }
   }
 
   Future requestSignUp(Map signupInfo) async {
@@ -54,9 +71,12 @@ class APIRequests {
       headers: {"Content-Type": "application/json"},
     );
     Dio dio = Dio();
-    var response =
-        await dio.post(apiSignupUrl, data: signupInfo, options: requestOptions);
-    print(response.data["user"]);
+    try {
+      var response = await dio.post(apiSignupUrl,
+          data: signupInfo, options: requestOptions);
+    } on Exception catch (e) {
+      Get.snackbar("Error", e.toString());
+    }
   }
 
   Future requestUserOrders(String userToken, String userId, int pageNumber,
@@ -124,12 +144,11 @@ class APIRequests {
         }
       }
     } on Exception catch (e) {
-      // print(e);
+      Get.snackbar("Error", e.toString());
     }
   }
 
   Future requestUserInfo(String? userToken, BuildContext context) async {
-    print(userToken);
     Options requestOptions = Options(
       responseType: ResponseType.plain,
       headers: {"Authorization": userToken, "Content-Type": "application/json"},
@@ -146,6 +165,46 @@ class APIRequests {
         context.read(generalmanagment).setUserInfo(userInfo);
         return userInfo;
       }
+    }
+  }
+
+  Future requestShowCountry(String? userToken, BuildContext context) async {
+    final Map<String, String?> data = {
+      'name': "مصر",
+    };
+    Options requestOptions = Options(
+      headers: {"Content-Type": "application/json", "Authorization": userToken},
+    );
+    Dio dio = Dio();
+    var response =
+        await dio.post(apiShowCountryUrl, data: data, options: requestOptions);
+    context.read(generalmanagment).setCountries(response.data[0]["govs"]);
+    return response.data;
+  }
+
+  Future requestCategoriesList(
+      String? userToken, BuildContext context, int currentPage) async {
+    Dio dio = Dio();
+    Options requestOptions = Options(
+      responseType: ResponseType.json,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": userToken,
+        'Charset': 'utf-8'
+      },
+    );
+    try {
+      var response = await dio.get(
+        apiCategoriesListUrl,
+        options: requestOptions,
+      );
+      // Map<String, dynamic> body = jsonDecode(response.data[0]);
+      var categories = ProductModel.fromJson(response.data[0]);
+      context.read(generalmanagment).addcategories(categories.data);
+      context.read(generalmanagment).setCurrentCategoryPage(++currentPage);
+      return categories;
+    } on Exception catch (e) {
+      // print(e);
     }
   }
 

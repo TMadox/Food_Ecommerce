@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
           .value; // containes login info extracted from both email and password fields.
       try {
         contextm.read(generalmanagment).setIsLoading();
-        var response = await APIRequests().requestLogin(loginInfo, contextm);
+        await APIRequests().requestLogin(loginInfo);
         if (loginInfo['rememberme']) {
           SharedPreferences.getInstance().then((value) {
             value.setString("email", loginInfo["email"]);

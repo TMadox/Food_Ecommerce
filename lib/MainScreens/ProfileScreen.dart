@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_store/CustomWidgets/CustomAppBar.dart';
+import 'package:test_store/CustomWidgets/CustomButton.dart';
 import 'package:test_store/Logic/APIRequests.dart';
 import 'package:test_store/Logic/StateManagement.dart';
+import 'package:test_store/MainScreens/EditProfileScreen.dart';
 import 'package:test_store/MainScreens/LoginScreen.dart';
 import 'package:test_store/Variables/ScreenSize.dart';
 import 'package:shimmer/shimmer.dart';
@@ -87,65 +89,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
+                      customButton(
+                          customOnPressed: () async {
+                            await SharedPreferences.getInstance()
+                                .then((value) => value.clear());
+                            Get.to(() => LoginScreen());
+                          },
+                          context: context,
+                          title: "تسجيل الخروج",
+                          primarycolor: Colors.white,
+                          titlecolor: Colors.black,
+                          newIcon: Icon(
+                            Icons.logout,
+                            color: Colors.black,
+                          )),
+                      customButton(
+                          customOnPressed: () {
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (BuildContext context) {
+                              return EditProfilePage();
+                            }));
+                          },
+                          context: context,
+                          title: "تعديل ابيانات الشخصية",
+                          primarycolor: Colors.black,
+                          titlecolor: Colors.white,
+                          newIcon: Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ))
                     ],
-                  )
-              // ListView(
-              //   children: [
-              //     // ElevatedButton(
-              //     //     onPressed: () {
-              //     //       Navigator.push(context,
-              //     //           MaterialPageRoute(builder: (BuildContext context) {
-              //     //         return LoginScreen();
-              //     //       }));
-              //     //     },
-              //     //     child: Text("data")),
-              //     Card(
-              //       elevation: 0.1,
-              //       child: ListTile(
-              //         title: Text("البريد الالكتروني"),
-              //         subtitle: Text(
-              //             watch(generalmanagment).userInfo!.email.toString()),
-              //       ),
-              //     ),
-              //     Card(
-              //       elevation: 0.1,
-              //       child: ListTile(
-              //         title: Text("رقم الهاتف"),
-              //         subtitle: Text(
-              //             watch(generalmanagment).userInfo!.phone.toString()),
-              //       ),
-              //     ),
-              //     Card(
-              //       elevation: 0.1,
-              //       child: ListTile(
-              //         title: Text("كلمة السر"),
-              //         subtitle: Text("*********"),
-              //       ),
-              //     ),
-              //     Card(
-              //       elevation: 0.1,
-              //       child: ListTile(
-              //         title: Text(""),
-              //         subtitle: Text(""),
-              //       ),
-              //     ),
-              //     Card(
-              //       elevation: 0.1,
-              //       child: ListTile(
-              //         title: Text(""),
-              //         subtitle: Text(""),
-              //       ),
-              //     ),
-              //     Card(
-              //       elevation: 0.1,
-              //       child: ListTile(
-              //         title: Text(""),
-              //         subtitle: Text(""),
-              //       ),
-              //     ),
-              //   ],
-              // ),
-              ),
+                  )),
         ));
   }
 }

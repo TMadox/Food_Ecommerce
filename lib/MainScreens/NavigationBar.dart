@@ -3,6 +3,8 @@ import 'package:test_store/MainScreens/HomeScreen.dart';
 import 'package:test_store/MainScreens/OrdersScreen.dart';
 import 'package:test_store/MainScreens/ProfileScreen.dart';
 
+import 'CategoriesScreen.dart';
+
 class CustomNavigationBar extends StatefulWidget {
   @override
   _CustomNavigationBar createState() => _CustomNavigationBar();
@@ -18,6 +20,7 @@ class _CustomNavigationBar extends State<CustomNavigationBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // appBar: AppBar(),
       body: IndexedStack(
         index: _currentIndex,
         children: <Widget>[
@@ -39,7 +42,7 @@ class _CustomNavigationBar extends State<CustomNavigationBar> {
             key: _CategoriesScreen,
             onGenerateRoute: (route) => MaterialPageRoute(
               settings: route,
-              builder: (context) => HomeScreen(),
+              builder: (context) => CategoriesScreen(),
             ),
           ),
           Navigator(

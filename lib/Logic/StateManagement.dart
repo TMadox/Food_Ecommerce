@@ -12,11 +12,14 @@ class General extends ChangeNotifier {
   late Map logininfo;
   bool isLoading = false;
   late int currentProductPage = 1;
-  late int totalProductsPages = 2;
+  late int totalProductsPages = 0;
   late int currentOrderPage = 1;
   late int totalOrdersPages = 0;
+  late int currentCategoryPage = 1;
+  late int totalCategoryPages = 0;
   late List products = [];
   late List orders = [];
+  List categories = [];
   late Map ordersResponse;
   late Map productsResponse;
   UserModel? userInfo;
@@ -24,11 +27,31 @@ class General extends ChangeNotifier {
   String? userId;
   late bool isLoadingNewItems = false;
   var cart = FlutterCart();
+  List countries = [];
   List governorates = [];
   List cities = [];
-  late String selectedGov;
+  var selectedGov;
+  String? selectedCategory;
+  String? userPassword;
 
-  void setSelectedGov(String input) {
+  void setUserPassword(String input) {
+    userPassword = input;
+  }
+
+  void setSelectedCategory(String input) {
+    selectedCategory = input;
+    notifyListeners();
+  }
+
+  void setCurrentCategoryPage(int input) {
+    currentCategoryPage = input;
+  }
+
+  void setCountries(List input) {
+    countries = input;
+  }
+
+  void setSelectedGov(var input) {
     selectedGov = input;
     notifyListeners();
   }
@@ -44,6 +67,11 @@ class General extends ChangeNotifier {
     } else {
       return false;
     }
+  }
+
+  void addcategories(List input) {
+    categories.addAll(input);
+    notifyListeners();
   }
 
   void addOrRemovefromCart(
@@ -101,6 +129,11 @@ class General extends ChangeNotifier {
 
   void setTotalOrderPages(int totalPages) {
     totalOrdersPages = totalPages;
+    notifyListeners();
+  }
+
+  void setTotalCategoryPages(int totalPages) {
+    totalCategoryPages = totalPages;
     notifyListeners();
   }
 
